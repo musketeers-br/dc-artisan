@@ -1,0 +1,84 @@
+{
+  "name": "dc-artisan",
+  "displayName": "DC Artisan",
+  "description": "Prompt enhancement and RAG pipeline tools for developers",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "dc-artisan.showPromptEnhance",
+        "title": "DC Artisan: Show Prompt Enhance"
+      },
+      {
+        "command": "dc-artisan.showRagPipeline",
+        "title": "DC Artisan: Show RAG Pipeline"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dc-artisan",
+          "title": "DC Artisan",
+          "icon": "media/artisan.svg"
+        }
+      ]
+    },
+    "views": {
+      "dc-artisan": [
+        {
+          "id": "promptEnhance",
+          "name": "Prompt Enhance"
+        },
+        {
+          "id": "ragPipeline",
+          "name": "RAG Pipeline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "DC Artisan",
+      "properties": {
+        "dc-artisan.defaultProvider": {
+          "type": "string",
+          "default": "chatgpt",
+          "enum": ["chatgpt", "claude", "gemini"],
+          "enumDescriptions": [
+            "OpenAI ChatGPT",
+            "Anthropic Claude",
+            "Google Gemini"
+          ],
+          "description": "Default AI provider for prompt testing"
+        },
+        "dc-artisan.defaultNamespace": {
+          "type": "string",
+          "default": "default",
+          "description": "Default namespace for RAG operations"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.14",
+    "@types/vscode": "^1.60.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "axios": "^1.10.0"
+  }
+}
