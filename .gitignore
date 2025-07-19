@@ -2,4 +2,8 @@
 iris-main.log
 .env
 .git
-
+vscode-extension/out/
+vscode-extension/node_modules/
+*.vsix
+vscode-extension/.vscode-test/
+.vscode-test/
