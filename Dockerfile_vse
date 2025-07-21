@@ -1,0 +1,12 @@
+FROM node:18-alpine AS build
+
+WORKDIR /workspace
+
+COPY vscode-extension/package.json vscode-extension/package-lock.json* ./
+RUN npm install
+
+COPY vscode-extension .
+
+# RUN npm run build
+
+# CMD ["npm", "run", "test"]

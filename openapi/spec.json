@@ -1,0 +1,443 @@
+{
+    "openapi": "2.0.0",
+    "info": {
+      "title": "DC Artisan API",
+      "description": "API documentation for the Artisan extension backend.",
+      "version": "1.0.0"
+    },
+    "paths": {
+      "/api/prompt-optimizer/optimize": {
+        "post": {
+          "summary": "Start prompt optimization session",
+          "description": "Initiates a session to optimize the user's original prompt by providing clarifying questions to enhance context and understanding.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "originalPrompt": {
+                      "type": "string",
+                      "description": "The user's initial prompt input."
+                    }
+                  },
+                  "required": [
+                    "originalPrompt"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "originalPrompt": {
+                        "type": "string",
+                        "description": "The original prompt submitted by the user."
+                      },
+                      "clarifyingQuestions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "A list of questions designed to clarify the prompt for better optimization."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "example": "Invalid request format."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/answer": {
+        "post": {
+          "summary": "Submit responses to clarifying questions",
+          "description": "Processes user responses to the clarifying questions and generates an optimized prompt.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "responses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "User responses to the previously provided clarifying questions."
+                    }
+                  },
+                  "required": [
+                    "responses"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "optimizedPrompt": {
+                        "type": "string",
+                        "description": "The resultant optimized prompt based on user inputs."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/rag/upload": {
+        "post": {
+          "summary": "Upload documents for RAG processing",
+          "description": "Accepts documents, splits them into manageable chunks, and stores them for efficient retrieval and querying.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "file": {
+                      "type": "string",
+                      "format": "binary",
+                      "description": "The document file to be uploaded."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Document processed successfully"
+            },
+            "400": {
+              "description": "Bad Request"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/rag/documents": {
+        "get": {
+          "summary": "Retrieve list of uploaded documents",
+          "description": "Retrieves a list of documents previously uploaded for RAG processing.",
+          "responses": {
+            "200": {
+              "description": "List of documents retrieved successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the document."
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "The name of the document."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/rag/documents/{id}": {
+        "delete": {
+          "summary": "Delete a document",
+          "description": "Removes a document and its associated data from RAG storage.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "The unique identifier for the document to be deleted."
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Document deleted successfully"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Document not found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/rag/documents/{id}/chunks": {
+        "get": {
+          "summary": "Retrieve document chunks",
+          "description": "Retrieves the chunked data associated with a given document.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "The unique identifier for the document."
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Document chunks retrieved successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "chunkId": {
+                          "type": "string"
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Document not found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/rag/chunks/{id}": {
+        "put": {
+          "summary": "Update a document chunk",
+          "description": "Updates the content of a specified document chunk.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "The unique identifier for the chunk to be updated."
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "content": {
+                      "type": "string",
+                      "description": "Updated content for the chunk."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Chunk updated successfully"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Chunk not found"
+            }
+          }
+        },
+        "delete": {
+          "summary": "Delete a document chunk",
+          "description": "Removes a specified chunk of a document.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "The unique identifier for the chunk to be deleted."
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Chunk deleted successfully"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Chunk not found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/rag/query": {
+        "post": {
+          "summary": "Perform semantic queries on RAG documents",
+          "description": "Allows the user to perform semantic-based queries within the RAG system for rapid information retrieval.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string",
+                      "description": "The semantic query to be executed against RAG documents."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Query executed successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "documentId": {
+                          "type": "string"
+                        },
+                        "matchScore": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Query target not found"
+            }
+          }
+        }
+      },
+      "/api/prompt-optimizer/rag/copy-namespace": {
+        "post": {
+          "summary": "Copy data between namespaces",
+          "description": "Facilitates the copying of data from one namespace to another within the system.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sourceNamespace": {
+                      "type": "string",
+                      "description": "The source namespace."
+                    },
+                    "targetNamespace": {
+                      "type": "string",
+                      "description": "The target namespace."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Namespace copied successfully"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Source or target namespace not found"
+            }
+          }
+        }
+      }
+    }
+  }

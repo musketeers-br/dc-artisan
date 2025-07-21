@@ -8,6 +8,19 @@
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
       <Resource Name="dc.artisan.PKG"/>
+      <WebApplication 
+        Name="/artisan/api" 
+        NameSpace="{$namespace}"
+        Path="/src"
+        Recurse="1"
+        Directory="{$cspdir}/csp/artisan/api" 
+        MatchRoles=":%All"
+        AutheEnabled="#{$$$AutheCache + $$$AutheUnauthenticated}"
+        DispatchClass="dc.artisan.Rest" 
+        ServeFiles="1"
+        CookiePath="/csp/artisan/api"
+        UseCookies="2"
+      />
     </Module>
   </Document>
 </Export>
