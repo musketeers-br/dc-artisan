@@ -43,8 +43,10 @@ ClassMethod Optimize() As %Status
         Do ##class(%REST.Impl).%WriteResponse(response)
 
     } Catch (ex) {
+        Set tSC=ex.AsStatus()
         W $System.Status.GetErrorText(ex)
     }
+    Return $$$OK
 }
 
 ClassMethod Answer() As %Status
@@ -84,8 +86,10 @@ ClassMethod Answer() As %Status
         Do ##class(%REST.Impl).%WriteResponse(response)
 
     } Catch (ex) {
+        Set tSC=ex.AsStatus()
         W $System.Status.GetErrorText(ex)
     }
+    Return $$$OK
 }
 
 }
