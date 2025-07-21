@@ -133,7 +133,7 @@
           }
         }
       },
-      "/api/prompt-optimizer/rag/upload": {
+      "/api/rag-pipeline/upload": {
         "post": {
           "summary": "Upload documents for RAG processing",
           "description": "Accepts documents, splits them into manageable chunks, and stores them for efficient retrieval and querying.",
@@ -170,7 +170,7 @@
           }
         }
       },
-      "/api/prompt-optimizer/rag/documents": {
+      "/api/rag-pipeline/documents": {
         "get": {
           "summary": "Retrieve list of uploaded documents",
           "description": "Retrieves a list of documents previously uploaded for RAG processing.",
@@ -207,7 +207,7 @@
           }
         }
       },
-      "/api/prompt-optimizer/rag/documents/{id}": {
+      "/api/rag-pipeline/documents/{id}": {
         "delete": {
           "summary": "Delete a document",
           "description": "Removes a document and its associated data from RAG storage.",
@@ -235,7 +235,7 @@
           }
         }
       },
-      "/api/prompt-optimizer/rag/documents/{id}/chunks": {
+      "/api/rag-pipeline/documents/{id}/chunks": {
         "get": {
           "summary": "Retrieve document chunks",
           "description": "Retrieves the chunked data associated with a given document.",
@@ -281,7 +281,7 @@
           }
         }
       },
-      "/api/prompt-optimizer/rag/chunks/{id}": {
+      "/api/rag-pipeline/chunks/{id}": {
         "put": {
           "summary": "Update a document chunk",
           "description": "Updates the content of a specified document chunk.",
@@ -351,7 +351,7 @@
           }
         }
       },
-      "/api/prompt-optimizer/rag/query": {
+      "/api/rag-pipeline/query": {
         "post": {
           "summary": "Perform semantic queries on RAG documents",
           "description": "Allows the user to perform semantic-based queries within the RAG system for rapid information retrieval.",
@@ -402,7 +402,7 @@
           }
         }
       },
-      "/api/prompt-optimizer/rag/copy-namespace": {
+      "/api/rag-pipeline/copy-namespace": {
         "post": {
           "summary": "Copy data between namespaces",
           "description": "Facilitates the copying of data from one namespace to another within the system.",
