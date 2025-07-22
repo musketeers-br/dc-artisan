@@ -3,7 +3,7 @@
   <Document name="dc-artisan.ZPM">
     <Module>
       <Name>dc-artisan</Name>
-      <Version>0.0.6</Version>
+      <Version>0.0.7</Version>
       <Description>Prompt enhancement and RAG pipeline tools for developers</Description>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
