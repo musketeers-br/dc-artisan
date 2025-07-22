@@ -12,6 +12,10 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
 
   constructor(private readonly _extensionUri: vscode.Uri) {
     this._apiClient = ApiClient.getInstance();
+    // Initialize API client when provider is created
+    this._apiClient.initialize().catch(error => {
+      console.error('Failed to initialize API client in PromptEnhanceProvider:', error);
+    });
   }
 
   public resolveWebviewView(
@@ -73,8 +77,20 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
 
   private async _optimizePreviewPrompt(previewPrompt: string) {
     try {
+      if (!previewPrompt || previewPrompt.trim() === '') {
+        vscode.window.showErrorMessage('Preview prompt is empty. Please enter a prompt first.');
+        return;
+      }
+      
       vscode.window.showInformationMessage('Optimizing preview prompt...');
+      console.log('Optimizing preview prompt:', previewPrompt);
+      
+      // Ensure API client is initialized
+      await this._apiClient.initialize();
+      
       const result = await this._apiClient.optimizePrompt(previewPrompt);
+      console.log('Optimization result:', result);
+      
       this._originalPrompt = result.originalPrompt;
       this._clarifyingQuestions = result.clarifyingQuestions;
       
@@ -85,13 +101,25 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
           questions: this._clarifyingQuestions
         });
         
-        // Switch to optimize tab
-        this._view.webview.postMessage({
-          type: 'switchToOptimizeTab'
-        });
+        // No need to switch tabs
       }
     } catch (error: any) {
-      vscode.window.showErrorMessage(`Failed to optimize preview prompt: ${error.message}`);
+      console.error('Error optimizing preview prompt:', error);
+      const errorMessage = `Failed to optimize preview prompt: ${error.message}`;
+      vscode.window.showErrorMessage(errorMessage);
+      
+      // Send error to webview
+      if (this._view) {
+        this._view.webview.postMessage({
+          type: 'error',
+          error: errorMessage
+        });
+      }
+      
+      // Show a more helpful message if it's a connection issue
+      if (error.message.includes('ECONNREFUSED') || error.message.includes('Invalid URL')) {
+        vscode.commands.executeCommand('dc-artisan.configureApi');
+      }
     }
   }
 
@@ -232,16 +260,20 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         .tab-content.active {
           display: block;
         }
+        .error-message {
+          background-color: #f44336;
+          color: white;
+          padding: 10px;
+          margin-bottom: 10px;
+          border-radius: 4px;
+        }
       </style>
     </head>
     <body>
       <div class="container">
-        <div class="tabs">
-          <div class="tab active" data-tab="template">Template</div>
-          <div class="tab" data-tab="optimize">Optimize</div>
-        </div>
+        <!-- No tabs needed -->
         
-        <div id="template-tab" class="tab-content active">
+        <div id="prompt-section">
           <div>
             <label for="prompt-text">Prompt Template (use {variable} for variables):</label>
             <textarea id="prompt-text" placeholder="Write your prompt here. Use {variable} syntax for variables.">I want you to translate the following text to {language}:
@@ -252,7 +284,7 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             <!-- Variables will be added here dynamically -->
           </div>
           
-          <div>
+          <div style="margin-top: 20px;">
             <button id="optimize-preview-button">Optimize Prompt</button>
           </div>
           
@@ -275,28 +307,29 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             </div>
           </div>
         </div>
-        
-        <div id="optimize-tab" class="tab-content">
-          <div>
-            <label for="original-prompt">Original Prompt:</label>
-            <textarea id="original-prompt" placeholder="Enter your prompt to optimize"></textarea>
-            <button id="optimize-button" style="margin-top: 10px;">Optimize Prompt</button>
-          </div>
-          
+        <div>
+          <!-- Questions section -->
           <div id="questions-section" class="hidden">
             <h4>Clarifying Questions</h4>
             <div id="questions-container" class="questions-container">
               <!-- Questions will be added here dynamically -->
             </div>
-            <button id="submit-responses-button" style="margin-top: 10px;">Submit Responses</button>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button id="back-to-prompt-button">Back to Prompt</button>
+              <button id="submit-responses-button">Submit Responses</button>
+            </div>
           </div>
           
+          <!-- Optimized prompt section -->
           <div id="optimized-section" class="hidden">
             <h4>Optimized Prompt</h4>
             <div class="preview" id="optimized-prompt">
               <!-- Optimized prompt will be shown here -->
             </div>
-            <button id="copy-optimized-button" style="margin-top: 10px;">Copy to Clipboard</button>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button id="back-to-prompt-from-optimized-button">Back to Prompt</button>
+              <button id="copy-optimized-button">Copy to Clipboard</button>
+            </div>
           </div>
         </div>
       </div>
@@ -310,37 +343,20 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         const providerSelect = document.getElementById('provider-select');
         const testButton = document.getElementById('test-button');
         
-        // Optimize tab elements
-        const originalPromptTextarea = document.getElementById('original-prompt');
-        const optimizeButton = document.getElementById('optimize-button');
+        // Sections
+        const promptSection = document.getElementById('prompt-section');
         const questionsSection = document.getElementById('questions-section');
+        const optimizedSection = document.getElementById('optimized-section');
+        
+        // Question and optimized prompt elements
         const questionsContainer = document.getElementById('questions-container');
         const submitResponsesButton = document.getElementById('submit-responses-button');
-        const optimizedSection = document.getElementById('optimized-section');
+        const backToPromptButton = document.getElementById('back-to-prompt-button');
         const optimizedPromptElement = document.getElementById('optimized-prompt');
         const copyOptimizedButton = document.getElementById('copy-optimized-button');
+        const backToPromptFromOptimizedButton = document.getElementById('back-to-prompt-from-optimized-button');
         
-        // Tab switching
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabs.forEach(tab => {
-          tab.addEventListener('click', () => {
-            const tabId = tab.getAttribute('data-tab');
-            
-            // Update active tab
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            // Show corresponding content
-            tabContents.forEach(content => {
-              content.classList.remove('active');
-              if (content.id === tabId + '-tab') {
-                content.classList.add('active');
-              }
-            });
-          });
-        });
+        // No tab switching needed
         
         // Extract variables from prompt text
         function extractVariables(text) {
@@ -408,10 +424,21 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             return;
           }
           
+          // Disable button to prevent multiple clicks
+          const button = document.getElementById('optimize-preview-button');
+          button.disabled = true;
+          button.textContent = 'Optimizing...';
+          
           vscode.postMessage({
             type: 'optimizePreviewPrompt',
             prompt: previewText
           });
+          
+          // Re-enable button after a timeout
+          setTimeout(() => {
+            button.disabled = false;
+            button.textContent = 'Optimize Prompt';
+          }, 5000);
         });
         
         // Test the prompt with selected provider
@@ -426,18 +453,13 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
           });
         });
         
-        // Optimize prompt
-        optimizeButton.addEventListener('click', () => {
-          const promptText = originalPromptTextarea.value.trim();
-          if (!promptText) {
-            alert('Please enter a prompt to optimize');
-            return;
-          }
-          
-          vscode.postMessage({
-            type: 'optimizePrompt',
-            prompt: promptText
-          });
+        // No optimize button needed
+        
+        // Back to prompt button
+        backToPromptButton.addEventListener('click', () => {
+          promptSection.classList.remove('hidden');
+          questionsSection.classList.add('hidden');
+          optimizedSection.classList.add('hidden');
         });
         
         // Submit responses to clarifying questions
@@ -453,6 +475,13 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             type: 'submitResponses',
             responses: responses
           });
+        });
+        
+        // Back to prompt from optimized section
+        backToPromptFromOptimizedButton.addEventListener('click', () => {
+          promptSection.classList.remove('hidden');
+          questionsSection.classList.add('hidden');
+          optimizedSection.classList.add('hidden');
         });
         
         // Copy optimized prompt to clipboard
@@ -478,19 +507,26 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             case 'optimizedPrompt':
               displayOptimizedPrompt(message.prompt);
               break;
-            case 'switchToOptimizeTab':
-              // Switch to optimize tab
-              tabs.forEach(t => t.classList.remove('active'));
-              document.querySelector('.tab[data-tab="optimize"]').classList.add('active');
+            case 'error':
+              // Re-enable the optimize button if there was an error
+              const button = document.getElementById('optimize-preview-button');
+              button.disabled = false;
+              button.textContent = 'Optimize Prompt';
               
-              // Show corresponding content
-              tabContents.forEach(content => {
-                content.classList.remove('active');
-                if (content.id === 'optimize-tab') {
-                  content.classList.add('active');
+              // Display error in the UI
+              const errorDiv = document.createElement('div');
+              errorDiv.className = 'error-message';
+              errorDiv.textContent = message.error;
+              document.querySelector('.container').prepend(errorDiv);
+              
+              // Remove error after 5 seconds
+              setTimeout(() => {
+                if (errorDiv.parentNode) {
+                  errorDiv.parentNode.removeChild(errorDiv);
                 }
-              });
+              }, 5000);
               break;
+            // No tab switching needed
           }
         });
         
@@ -515,6 +551,8 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             questionsContainer.appendChild(questionItem);
           });
           
+          // Hide prompt section and show questions section
+          promptSection.classList.add('hidden');
           questionsSection.classList.remove('hidden');
           optimizedSection.classList.add('hidden');
         }
@@ -522,7 +560,9 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         // Display optimized prompt
         function displayOptimizedPrompt(prompt) {
           optimizedPromptElement.textContent = prompt;
+          questionsSection.classList.add('hidden');
           optimizedSection.classList.remove('hidden');
+          // Keep prompt section hidden
         }
         
         // Initialize

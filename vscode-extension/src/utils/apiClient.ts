@@ -19,14 +19,15 @@ export class ApiClient {
 
   public async initialize(): Promise<boolean> {
     try {
-      // Try to load configuration from objectscript.conn
-      const objectscriptConfig = vscode.workspace.getConfiguration('objectscript');
-      const conn = objectscriptConfig.get('conn') as any;
+      // First try to load from dcArtisan config as it's most specific
+      const artisanConfig = vscode.workspace.getConfiguration('dcArtisan');
+      const apiUrl = artisanConfig.get('apiUrl') as string;
       
-      if (conn) {
-        this.baseUrl = `${conn.protocol || 'http'}://${conn.host}:${conn.port}/artisan/api`;
+      if (apiUrl) {
+        console.log(`Using API URL from dcArtisan config: ${apiUrl}`);
+        this.baseUrl = apiUrl;
         return true;
-      } 
+      }
       
       // Try to load configuration from intersystems.servers
       const serversConfig = vscode.workspace.getConfiguration('intersystems.servers');
@@ -40,21 +41,23 @@ export class ApiClient {
         if (server && server.webServer) {
           const { scheme, host, port } = server.webServer;
           this.baseUrl = `${scheme || 'http'}://${host}:${port}/artisan/api`;
+          console.log(`Using API URL from intersystems.servers: ${this.baseUrl}`);
           return true;
         }
       }
       
-      // If no server configurations found, try dcArtisan config
-      const artisanConfig = vscode.workspace.getConfiguration('dcArtisan');
-      const apiUrl = artisanConfig.get('apiUrl') as string;
+      // Try to load configuration from objectscript.conn
+      const objectscriptConfig = vscode.workspace.getConfiguration('objectscript');
+      const conn = objectscriptConfig.get('conn') as any;
       
-      if (apiUrl) {
-        this.baseUrl = apiUrl;
+      if (conn && conn.host && conn.port) {
+        this.baseUrl = `${conn.protocol || 'http'}://${conn.host}:${conn.port}/artisan/api`;
+        console.log(`Using API URL from objectscript.conn: ${this.baseUrl}`);
         return true;
-      } else {
-        // If no configuration found, prompt user
-        return await this.promptForApiUrl();
       }
+      
+      // If no configuration found, prompt user
+      return await this.promptForApiUrl();
     } catch (error) {
       console.error('Error initializing API client:', error);
       return false;
@@ -87,29 +90,58 @@ export class ApiClient {
 
   public async request<T>(endpoint: string, method: string = 'GET', data?: any): Promise<T> {
     if (!this.baseUrl) {
+      console.log('Base URL not set, initializing API client...');
       const initialized = await this.initialize();
       if (!initialized) {
         throw new Error('API connection not initialized');
       }
     }
     
+    // Validate URL format
+    try {
+      new URL(this.baseUrl);
+    } catch (error) {
+      console.error('Invalid API URL format:', this.baseUrl);
+      throw new Error(`Invalid API URL: ${this.baseUrl}. Please configure a valid URL.`);
+    }
+    
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log(`Making ${method} request to: ${url}`);
+    
     const config: AxiosRequestConfig = {
       method,
-      url: `${this.baseUrl}${endpoint}`,
+      url,
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      // Add timeout to prevent hanging requests
+      timeout: 10000
     };
     
     if (data) {
       config.data = data;
+      console.log('Request payload:', JSON.stringify(data));
     }
     
     try {
       const response = await axios(config);
+      console.log('Request successful');
       return response.data;
     } catch (error: any) {
-      console.error('API request failed:', error.message);
+      console.error('API request failed:', error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error setting up request:', error.message);
+      }
       throw new Error(`API request failed: ${error.message}`);
     }
   }

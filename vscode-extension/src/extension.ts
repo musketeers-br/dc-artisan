@@ -8,8 +8,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Initialize API client
   const apiClient = ApiClient.getInstance();
-  apiClient.initialize().catch(error => {
+  apiClient.initialize().then(success => {
+    if (success) {
+      console.log('API client initialized successfully');
+    } else {
+      console.error('API client initialization failed');
+      vscode.window.showWarningMessage('DC Artisan: API client initialization failed. Please configure the API URL.');
+    }
+  }).catch(error => {
     console.error('Failed to initialize API client:', error);
+    vscode.window.showErrorMessage(`DC Artisan: API client initialization error: ${error.message}`);
   });
 
   // Register the Prompt Enhance view provider
@@ -44,6 +52,27 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('dc-artisan.showRagPipeline', () => {
       vscode.commands.executeCommand('workbench.view.extension.dc-artisan');
       vscode.commands.executeCommand('ragPipeline.focus');
+    })
+  );
+  
+  // Register API test connection command
+  context.subscriptions.push(
+    vscode.commands.registerCommand('dc-artisan.testApiConnection', async () => {
+      try {
+        vscode.window.showInformationMessage('Testing API connection...');
+        const apiClient = ApiClient.getInstance();
+        await apiClient.initialize();
+        
+        // Try to make a simple request
+        try {
+          const response = await apiClient.optimizePrompt('Test connection');
+          vscode.window.showInformationMessage(`API connection successful! Server responded with ${response.clarifyingQuestions.length} questions.`);
+        } catch (error: any) {
+          vscode.window.showErrorMessage(`API request failed: ${error.message}`);
+        }
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`API connection test failed: ${error.message}`);
+      }
     })
   );
   

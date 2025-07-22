@@ -2,7 +2,15 @@
   "name": "dc-artisan",
   "displayName": "DC Artisan",
   "description": "Prompt enhancement and RAG pipeline tools for developers",
-  "version": "0.0.5",
+  "version": "0.0.8",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/musketeers-br/dc-artisan"
+  },
+  "author": {
+    "name": "Musketeers-br",
+    "url": "https://musketeers-br.github.io/musketeers/"
+  },
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -14,7 +22,8 @@
     "onView:ragPipeline",
     "onCommand:dc-artisan.showPromptEnhance",
     "onCommand:dc-artisan.showRagPipeline",
-    "onCommand:dc-artisan.configureApi"
+    "onCommand:dc-artisan.configureApi",
+    "onCommand:dc-artisan.testApiConnection"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -30,6 +39,10 @@
       {
         "command": "dc-artisan.configureApi",
         "title": "DC Artisan: Configure API URL"
+      },
+      {
+        "command": "dc-artisan.testApiConnection",
+        "title": "DC Artisan: Test API Connection"
       }
     ],
     "viewsContainers": {
