@@ -126,7 +126,27 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
   private async _submitResponses(responses: string[]) {
     try {
       vscode.window.showInformationMessage('Processing responses...');
-      const result = await this._apiClient.submitResponses(responses);
+      
+      // Make sure we have the original prompt and clarifying questions
+      if (!this._originalPrompt) {
+        throw new Error('Original prompt is missing');
+      }
+      
+      if (!this._clarifyingQuestions || this._clarifyingQuestions.length === 0) {
+        throw new Error('Clarifying questions are missing');
+      }
+      
+      console.log('Submitting responses with:', {
+        originalPrompt: this._originalPrompt,
+        clarifyingQuestions: this._clarifyingQuestions,
+        userResponses: responses
+      });
+      
+      const result = await this._apiClient.submitResponses(
+        this._originalPrompt,
+        this._clarifyingQuestions,
+        responses
+      );
       
       // Send the optimized prompt back to the webview
       if (this._view) {
@@ -136,7 +156,16 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         });
       }
     } catch (error: any) {
+      console.error('Error submitting responses:', error);
       vscode.window.showErrorMessage(`Failed to process responses: ${error.message}`);
+      
+      // Send error to webview
+      if (this._view) {
+        this._view.webview.postMessage({
+          type: 'error',
+          error: `Failed to process responses: ${error.message}`
+        });
+      }
     }
   }
 
@@ -329,6 +358,7 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             <div style="display: flex; gap: 10px; margin-top: 10px;">
               <button id="back-to-prompt-from-optimized-button">Back to Prompt</button>
               <button id="copy-optimized-button">Copy to Clipboard</button>
+              <button id="update-template-button">Update Template</button>
             </div>
           </div>
         </div>
@@ -355,6 +385,7 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         const optimizedPromptElement = document.getElementById('optimized-prompt');
         const copyOptimizedButton = document.getElementById('copy-optimized-button');
         const backToPromptFromOptimizedButton = document.getElementById('back-to-prompt-from-optimized-button');
+        const updateTemplateButton = document.getElementById('update-template-button');
         
         // No tab switching needed
         
@@ -471,10 +502,20 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             responses.push(input.value);
           });
           
+          // Disable button to prevent multiple clicks
+          submitResponsesButton.disabled = true;
+          submitResponsesButton.textContent = 'Processing...';
+          
           vscode.postMessage({
             type: 'submitResponses',
             responses: responses
           });
+          
+          // Re-enable button after a timeout
+          setTimeout(() => {
+            submitResponsesButton.disabled = false;
+            submitResponsesButton.textContent = 'Submit Responses';
+          }, 5000);
         });
         
         // Back to prompt from optimized section
@@ -496,12 +537,53 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
             });
         });
         
+        // Update template with optimized prompt
+        updateTemplateButton.addEventListener('click', () => {
+          const optimizedText = optimizedPromptElement.textContent;
+          promptTextarea.value = optimizedText;
+          
+          // Show prompt section and hide optimized section
+          promptSection.classList.remove('hidden');
+          optimizedSection.classList.add('hidden');
+          
+          // Update variables UI based on new template
+          updateVariablesUI();
+          
+          // Show success message
+          const successDiv = document.createElement('div');
+          successDiv.style.backgroundColor = '#4CAF50';
+          successDiv.style.color = 'white';
+          successDiv.style.padding = '10px';
+          successDiv.style.marginBottom = '10px';
+          successDiv.style.borderRadius = '4px';
+          successDiv.textContent = 'Template updated successfully!';
+          document.querySelector('.container').prepend(successDiv);
+          
+          // Remove success message after 3 seconds
+          setTimeout(() => {
+            if (successDiv.parentNode) {
+              successDiv.parentNode.removeChild(successDiv);
+            }
+          }, 3000);
+        });
+        
+        // Store original prompt and questions for later use
+        let originalPrompt = '';
+        let clarifyingQuestions = [];
+        
         // Handle messages from extension
         window.addEventListener('message', event => {
           const message = event.data;
           
           switch (message.type) {
             case 'clarifyingQuestions':
+              // Store the questions for later submission
+              clarifyingQuestions = message.questions;
+              // Store the original prompt (from the preview)
+              originalPrompt = previewElement.textContent;
+              console.log('Stored original prompt:', originalPrompt);
+              console.log('Stored clarifying questions:', clarifyingQuestions);
+              
               displayClarifyingQuestions(message.questions);
               break;
             case 'optimizedPrompt':
@@ -559,6 +641,10 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         
         // Display optimized prompt
         function displayOptimizedPrompt(prompt) {
+          // Re-enable submit button if it was disabled
+          submitResponsesButton.disabled = false;
+          submitResponsesButton.textContent = 'Submit Responses';
+          
           optimizedPromptElement.textContent = prompt;
           questionsSection.classList.add('hidden');
           optimizedSection.classList.remove('hidden');

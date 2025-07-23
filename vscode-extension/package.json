@@ -2,7 +2,7 @@
   "name": "dc-artisan",
   "displayName": "DC Artisan",
   "description": "Prompt enhancement and RAG pipeline tools for developers",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "repository": {
     "type": "git",
     "url": "https://github.com/musketeers-br/dc-artisan"
@@ -11,6 +11,7 @@
     "name": "Musketeers-br",
     "url": "https://musketeers-br.github.io/musketeers/"
   },
+  "publisher": "3musketeers-br",
   "engines": {
     "vscode": "^1.60.0"
   },

@@ -153,10 +153,19 @@ export class ApiClient {
     });
   }
 
-  public async submitResponses(responses: string[]): Promise<{optimizedPrompt: string}> {
-    return this.request<{optimizedPrompt: string}>('/prompt-optimizer/answer', 'POST', {
-      responses
+  public async submitResponses(
+    originalPrompt: string,
+    clarifyingQuestions: string[],
+    userResponses: string[]
+  ): Promise<{optimizedPrompt: string}> {
+    const response = await this.request<{improved_prompt: string}>('/prompt-optimizer/answer', 'POST', {
+      originalPrompt,
+      clarifyingQuestions,
+      user_responses: userResponses
     });
+    
+    // Map the improved_prompt to optimizedPrompt for consistency
+    return { optimizedPrompt: response.improved_prompt };
   }
 
   // RAG Pipeline endpoints
