@@ -1,2 +1,4 @@
-# numpy==1.23.4
-# pandas==1.5.0
+python-dotenv
+pandas
+requests==2.31.0
+litellm

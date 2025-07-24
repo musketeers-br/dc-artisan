@@ -24,23 +24,27 @@ ClassMethod Optimize() As %Status
     Try {
         Do ##class(%REST.Impl).%SetContentType("application/json")
 
-        /*
-        Ask me clarifying questions, then suggest a more effective prompt that you will yield a more accurate and detailed output. 
-        Prompt: {UserPrompt}
-        */
-        Set userPrompt=##class(%DynamicAbstractObject).%FromJSON(%request.Content)
-        Set response = {
-            "originalPrompt": "act as a Writer and create a detailed report on climate change. Your report should include the following sections:\n1. **Introduction** – Define climate change and explain its importance.\n2. **Causes** – Describe both natural and human-induced causes of climate change.\n3. **Impacts** – Discuss the effects of climate change on the environment, weather patterns, human health, and global economies.\n4. **Current Status** – Provide an overview of the current global situation, including data on temperature rise, carbon emissions, and key international agreements.\n5. **Solutions and Mitigation** – Outline efforts being made to combat climate change, such as renewable energy, carbon reduction strategies, and policy initiatives.\n6. **Conclusion** – Summarize key points and emphasize the urgency of action.\n*Use credible sources, include data where appropriate, and maintain a formal, informative tone throughout.*",
-            "clarifyingQuestions": [
-                "1. **Audience:**\nWho is the intended audience for this report? (e.g., general public, high school students, policymakers, scientists)",
-                "2. **Length & Depth:**\nHow long or detailed should the report be? Are you looking for a brief overview (\\~1,000 words), an in-depth paper (\\~3,000–5,000 words), or something else?",
-                "3. **Style & Format:**\nDo you want the report formatted as an academic paper (with citations and references), a government-style white paper, or more of a general informative article?",
-                "4. **Source Preferences:**\nDo you want references from specific sources (e.g., IPCC, NASA, NOAA), or should I use general credible scientific and governmental data?",
-                "5. **Date Sensitivity:**\nDo you want the most up-to-date information available as of today, or are you okay with pre-2024 data?",
-                "6. **Medium of Use:**\nWill this be used in print, web, presentation, or another format that might affect tone or structure?"
-            ]
+        // Get Business Service instance
+        Set sc = ##class(Ens.Director).CreateBusinessService("OptimizerService", .businessService)
+        If $$$ISERR(sc) || '$IsObject(businessService) {
+            Throw ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, "Service unavailable"))
         }
-        Do ##class(%REST.Impl).%WriteResponse(response)
+
+        Set userPrompt=##class(%DynamicAbstractObject).%FromJSON(%request.Content)
+
+        // Create request object
+        Set request = ##class(dc.artisan.i14y.Messages.Request).%New()
+        Set request.Bundle = userPrompt.%ToJSON()
+
+        // Process request
+        Set sc = businessService.ProcessInput(request, .response)
+        If $$$ISERR(sc) || '$IsObject(response) {
+            Throw ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, "Processing error"))
+        }
+
+        Set stream = ##class(%Stream.GlobalCharacter).%New()
+        ;Do stream.Write(response.AnalysisResult)
+        ;act as a Writer and create a detailed report on climate change. Your report should include the following sections:\n1. **Introduction** – Define climate change and explain its importance.\n2. **Causes** – Describe both natural and human-induced causes of climate change.\n3. **Impacts** – Discuss the effects of climate change on the environment, weather patterns, human health, and global economies.\n4. **Current Status** – Provide an overview of the current global situation, including data on temperature rise, carbon emissions, and key international agreements.\n5. **Solutions and Mitigation** – Outline efforts being made to combat climate change, such as renewable energy, carbon reduction strategies, and policy initiatives.\n6. **Conclusion** – Summarize key points and emphasize the urgency of action.\n*Use credible sources, include data where appropriate, and maintain a formal, informative tone throughout.*
 
     } Catch (ex) {
         Set tSC=ex.AsStatus()
@@ -59,10 +63,9 @@ ClassMethod Answer() As %Status
         And the user answers so far:\n{user_responses}\n
         Give a improved optimized prompt
 
-        Ask me clarifying questions, then suggest a more effective prompt that you will yield a more accurate and detailed output. 
-        Prompt: {UserPrompt}
         */
         Set userPrompt=##class(%DynamicAbstractObject).%FromJSON(%request.Content)
+
         Set response = {
             "originalPrompt": "act as a Writer and create a detailed report on climate change. Your report should include the following sections:\n1. **Introduction** – Define climate change and explain its importance.\n2. **Causes** – Describe both natural and human-induced causes of climate change.\n3. **Impacts** – Discuss the effects of climate change on the environment, weather patterns, human health, and global economies.\n4. **Current Status** – Provide an overview of the current global situation, including data on temperature rise, carbon emissions, and key international agreements.\n5. **Solutions and Mitigation** – Outline efforts being made to combat climate change, such as renewable energy, carbon reduction strategies, and policy initiatives.\n6. **Conclusion** – Summarize key points and emphasize the urgency of action.\n*Use credible sources, include data where appropriate, and maintain a formal, informative tone throughout.*",
             "clarifyingQuestions": [
