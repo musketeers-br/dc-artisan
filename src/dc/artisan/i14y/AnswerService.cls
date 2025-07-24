@@ -24,10 +24,15 @@ Method OnProcessInput(pInput As dc.artisan.i14y.Messages.Request, Output pOutput
 {
     Try {
         // Validate input
-        If '$IsObject(pInput) || (pInput.base64 = "") {
+        If '$IsObject(pInput) {
             Return $$$ERROR($$$GeneralError, "Invalid input request")
         }
         
+        // Forward to Business Process
+        Set bpRequest = ##class(dc.artisan.i14y.Messages.Request).%New()
+        Set bpRequest.Bundle = pInput.Bundle
+        Set bpRequest.Model = pInput.Model
+        Set:(bpRequest.Model="") bpRequest.Model = "openai/gpt-4o"
         // Forward to Business Process
         Set sc = ..SendRequestSync("AnswerProcess", pInput, .pOutput)
         

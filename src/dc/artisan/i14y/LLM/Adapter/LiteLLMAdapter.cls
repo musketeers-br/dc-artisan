@@ -15,7 +15,7 @@ Property BaseURL As %String;
 Property Timeout As %Numeric [ InitialExpression = 30 ];
 
 /// Default model to use if not specified in request
-Property DefaultModel As %String [ InitialExpression = "o4-mini" ];
+Property DefaultModel As %String [ InitialExpression = "openai/o4-mini" ];
 
 /// Maximum retry attempts for failed calls
 Property MaxRetries As %Integer [ InitialExpression = 0 ];
@@ -40,7 +40,7 @@ Method OnInit() As %Status
         Set ..os = ##class(%SYS.Python).Import("os")
         Set ..json = ##class(%SYS.Python).Import("json")
         Set ..litellm = ##class(%SYS.Python).Import("litellm")
-        
+
         // Set API keys from configuration
         If ..APIKeysConfig '= "" {
             Try {

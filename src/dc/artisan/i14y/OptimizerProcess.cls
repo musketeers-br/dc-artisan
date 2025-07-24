@@ -10,14 +10,23 @@ Method OnRequest(pRequest As dc.artisan.i14y.Messages.Request, Output pResponse 
     Set tSC = $$$OK
     
     Try {
-        Set prompt = ..GetPromptQuestions(pRequest.Bundle)
-        W prompt,!
+        Set bundle = {}.%FromJSON(pRequest.Bundle)
+        Set prompt = ..GetPromptQuestions(bundle.originalPrompt)
         $$$ThrowOnError(..CallLiteLLM(prompt, pRequest.Model, .llmResponse))
-        Set analysisReport = llmResponse.GetFirstCompletion()
+        Set response = llmResponse.GetFirstCompletion()
+
+        Set lst = $ListFromString(response,$Char(10))
+        Set output = {"originalPrompt": (bundle.originalPrompt)}
+        Set questions = []
+        Set pointer= 0
+        While $ListNext(lst, pointer, value) {
+            Do questions.%Push(value)
+        }
+        Set output.clarifyingQuestions = questions
 
         // Create and populate the response
         Set pResponse = ##class(dc.artisan.i14y.Messages.Response).%New()
-        Set pResponse.AnalysisResult = analysisReport
+        Set pResponse.Result = output.%ToJSON()
     } Catch ex {
         Set tSC = $$$ERROR($$$GeneralError,"Error in Process: "_ex.DisplayString()_" at "_ex.Location)
     }

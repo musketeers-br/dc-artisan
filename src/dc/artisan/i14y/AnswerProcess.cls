@@ -10,13 +10,27 @@ Method OnRequest(pRequest As dc.artisan.i14y.Messages.Request, Output pResponse 
     Set tSC = $$$OK
     
     Try {
-        Set prompt = ..GetPromptQuestions(pRequest.Bundle)
+        Set bundle = {}.%FromJSON(pRequest.Bundle)
+        Set questions = ""
+        Set:(bundle.clarifyingQuestions'="") questions = bundle.clarifyingQuestions.%ToJSON()
+        Set answers = ""
+        Set:(bundle.%Get("user_responses")'="") answers = bundle."user_responses".%ToJSON()
+        Set prompt = ..GetPromptImprovedVersion(bundle.originalPrompt, questions, answers)
         $$$ThrowOnError(..CallLiteLLM(prompt, pRequest.Model, .llmResponse))
-        Set analysisReport = llmResponse.GetFirstCompletion()
+        Set resp = llmResponse.GetFirstCompletion()
+        Set lst = $ListFromString(resp,"Key Improvements:")
+        Set response = $Replace($List(lst,1), "# Final Prompt:", "")
+        Set keyImprovements = $List(lst,2)
+        Set output = {"originalPrompt": (bundle.originalPrompt),
+            "clarifyingQuestions": (bundle.clarifyingQuestions),
+            "user_responses": (bundle."user_responses"),
+            "improved_prompt": (response),
+            "key_improvements": (keyImprovements)
+        }
 
         // Create and populate the response
         Set pResponse = ##class(dc.artisan.i14y.Messages.Response).%New()
-        Set pResponse.AnalysisResult = analysisReport
+        Set pResponse.Result = output.%ToJSON()
     } Catch ex {
         Set tSC = $$$ERROR($$$GeneralError,"Error in Process: "_ex.DisplayString()_" at "_ex.Location)
     }
@@ -61,30 +75,6 @@ Method CallLiteLLM(pPrompt As %String, pModel As %String, Output pResponse As %L
     Return tSC
 }
 
-Method GetPromptQuestions(userPrompt As %String) As %String
-{
-    Set prompt = "# ROLE AND GOAL "_$c(10)_
-        "You are an expert Prompt Engineer. Your task is to analyze an initial user prompt and identify areas that lack clarity, "_$c(10)_
-        " context, or detail. Based on this analysis, your sole objective is to formulate a list of specific, "_$c(10)_
-        " clarifying questions that will help the user refine their idea. Do not write the final prompt yet. "_$c(10)_
-        "# ANALYSIS FRAMEWORK "_$c(10)_
-        "Analyze the user's prompt based on these key criteria: "_$c(10)_
-        "1.  **Core Objective:** What is the primary goal or output the user wants to create? "_$c(10)_
-        "2.  **Target Audience:** Who is the final output for? "_$c(10)_
-        "3.  **Format & Structure:** How should the output be structured (e.g., list, table, essay, code)? "_$c(10)_
-        "4.  **Tone & Style:** What is the desired tone (e.g., formal, casual, technical, creative)? "_$c(10)_
-        "5.  **Context & Constraints:** What background information is necessary? What should be included or explicitly excluded? "_$c(10)_
-        "# INSTRUCTIONS "_$c(10)_
-        "1.  Receive the user's initial prompt provided below in `User Prompt`. "_$c(10)_
-        "2.  Silently analyze it using the framework above. "_$c(10)_
-        "3.  Generate a numbered list of questions to gather the missing information. "_$c(10)_
-        "4.  Your response must be ONLY Your questions. "_$c(10)_
-        "# USER PROMPT  "_$c(10)_
-        userPrompt
-    
-    Return prompt
-}
-
 Method GetPromptImprovedVersion(originalPrompt As %String, clarifyingQuestions As %String, userAnswers As %String) As %String
 {
     Set prompt = "# ROLE AND GOAL "_$c(10)_
@@ -101,8 +91,7 @@ Method GetPromptImprovedVersion(originalPrompt As %String, clarifyingQuestions A
         "2.  Synthesize the user's original goal with the specific details from their answers."_$c(10)_
         "3.  Construct a single, highly effective, and detailed final prompt that incorporates all the user's requirements. "_
             "The final prompt should be clear, specific, and ready to be used."_$c(10)_
-        "4.  Present the final prompt inside a code block for easy copying. "_$c(10)_
-        "5.  After the code block, add a brief, bulleted list titled 'Key Improvements' "_
+        "4. Add a brief, bulleted list titled 'Key Improvements' "_
             "explaining why this new prompt is more effective than the original."_$c(10)_
         "# PROVIDED INFORMATION "_$c(10)_
         "## Original Prompt: "_$c(10)_

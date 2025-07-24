@@ -32,6 +32,8 @@ Method OnProcessInput(pInput As dc.artisan.i14y.Messages.Request, Output pOutput
         // Forward to Business Process
         Set bpRequest = ##class(dc.artisan.i14y.Messages.Request).%New()
         Set bpRequest.Bundle = pInput.Bundle
+        Set bpRequest.Model = pInput.Model
+        Set:(bpRequest.Model="") bpRequest.Model = "openai/gpt-4o"
         Set sc = ..SendRequestSync("OptimizerProcess", bpRequest, .bpResponse)
         
         If $$$ISERR(sc) || '$IsObject(bpResponse) {
@@ -40,7 +42,7 @@ Method OnProcessInput(pInput As dc.artisan.i14y.Messages.Request, Output pOutput
         
         // Return final response
         Set pOutput = ##class(dc.artisan.i14y.Messages.Response).%New()
-        Set pOutput.AnalysisResult = bpResponse.AnalysisResult
+        Set pOutput.Result = bpResponse.Result
         Return $$$OK
         
     } Catch ex {
