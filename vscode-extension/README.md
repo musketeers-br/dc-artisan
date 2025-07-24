@@ -37,8 +37,29 @@ This extension contributes the following settings:
 
 - Initial release, please report any issues on the GitHub repository
 
-## Release Notes
+## How to compile and package the extension
 
-### 1.0.0
+Follow these steps to compile and generate the `.vsix` file for this extension:
 
-Initial release of DC Artisan
+1. Install [Node.js](https://nodejs.org/).
+2. In the terminal, navigate to the `vscode-extension` folder of the project:
+   ```bash
+   cd vscode-extension
+   ```
+3. Install the project dependencies:
+   ```bash
+   npm install
+   ```
+4. Install the `vsce` utility globally (used to package VSCode extensions):
+   ```bash
+   npm install -g @vscode/vsce
+   ```
+5. To compile the extension:
+   ```bash
+   npm run compile
+   ```
+6. To package and generate the `.vsix` file:
+   ```bash
+   vsce package
+   ```
+   The `.vsix` file will be generated in the current folder and is ready to be installed in VSCode.
