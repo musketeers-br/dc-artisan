@@ -16,6 +16,7 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
     <Route Url="/prompt-optimizer/optimize" Method="post" Call="Optimize" />
     <Route Url="/prompt-optimizer/answer" Method="post" Call="Answer" />
     <!--RAG Operations -->
+    <Route Url="/rag-pipeline/vectorize" Method="post" Call="Vectorize" />
 </Routes>
 }
 

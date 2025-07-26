@@ -3,3 +3,7 @@ pandas
 requests
 openai
 litellm
+langchain
+langchain-iris
+langchain-openai>=0.1.6
+langchain-community>=0.2.0

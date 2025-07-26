@@ -32,6 +32,9 @@ Property json As %SYS.Python [ Private ];
 /// Python lib for interacting with LiteLLM services
 Property litellm As %SYS.Python [ Private ];
 
+Property vector As %SYS.Python [ Private ];
+
+/// from langchain_iris import IRISVector
 Method OnInit() As %Status
 {
     Set tSC = $$$OK
@@ -120,6 +123,119 @@ Method CallLiteLLM(pRequest As dc.artisan.i14y.LLM.Messages.LiteLLMRequest, Outp
     }
     
     Quit tSC
+}
+
+Method CallLiteLLMDocumentIngest(pRequest As dc.artisan.i14y.LLM.Messages.LiteLLMDocumentRequest, Output pResponse As dc.artisan.i14y.LLM.Messages.LiteLLMDocumentResponse) As %Status
+{
+    Set tSC = $$$OK
+    Try {
+        Set output = ..DocumentIngest(pRequest.EmbeddingModel, pRequest.Collection, pRequest.Document, pRequest.FileType, pRequest.ChunkSize)
+        Set json = {}.%FromJSON(output)
+    
+        If (json.%Get("error","")'="") {
+            Set pResponse.Error = json.error.%ToJSON()
+            Return ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, pResponse.Error ))
+        }
+        Set pResponse.Collection = pRequest.Collection
+        Set pResponse.TotalDocuments = json.%Get("total_documents", 0)
+    } Catch ex {
+        Set tSC = ex.AsStatus()
+        Set pResponse.Error = {
+            "message": "All LiteLLM call attempts failed",
+            "details": ($System.Status.GetOneErrorText(tSC))
+        }.%ToJSON()
+    }
+    
+    Return tSC
+}
+
+ClassMethod DocumentIngest(embeddingModel As %String, collection As %String, base64 As %String, fileType As %String, chunkSize As %Integer) As %String [ Language = python ]
+{
+    import json
+    import os
+    from langchain_iris import IRISVector
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    from langchain_core.embeddings import Embeddings
+    from langchain_core.documents import Document
+    import litellm
+    import iris
+    from typing import List
+
+    class LiteLLMEmbeddings(Embeddings):
+        def __init__(self, model: str = "text-embedding-3-small" ):
+            self.model = model
+        
+        def embed_documents(self, texts: List[str]) -> List[List[float]]:
+            response = litellm.embedding(model=self.model, input=texts)
+            return [item['embedding'] for item in response['data']]
+        
+        def embed_query(self, text: str) -> List[float]:
+            response = litellm.embedding(model=self.model, input=[text])
+            return response['data'][0]['embedding']
+
+    # Create a Document object from the string
+    docs = iris.cls(__name__).DocumentLoader(base64, fileType)
+
+    try:
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunkSize, chunk_overlap=200)
+        splits = text_splitter.split_documents(docs)
+
+        vectorstore = IRISVector.from_documents(
+            documents=splits,
+            embedding=LiteLLMEmbeddings(model=embeddingModel),
+            dimension=1536,
+            collection_name=collection,
+        )
+
+        output = {
+            "status": True,
+            "collection_name": collection,
+            "total_documents": len(vectorstore.get()['ids'])
+        }
+
+        return json.dumps(output)
+    except Exception as err:
+        return json.dumps({"error": str(err)})
+}
+
+ClassMethod DocumentLoader(base64 As %String, fileType As %String) As %SYS.Python [ Language = python ]
+{
+    import base64
+    import tempfile
+    import os
+    from langchain_community.document_loaders import (
+        TextLoader, PyPDFLoader, Docx2txtLoader, UnstructuredRTFLoader
+    )
+    
+    # Decode base64 content
+    file_content = base64.b64decode(base64)
+    
+    # Create temporary file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{fileType}') as temp_file:
+        temp_file.write(file_content)
+        temp_path = temp_file.name
+    
+    try:
+        # Select appropriate loader based on file type
+        if fileType.lower() in ['txt', 'md', 'markdown']:
+            loader = TextLoader(temp_path)
+        elif fileType.lower() == 'pdf':
+            loader = PyPDFLoader(temp_path)
+        elif fileType.lower() == 'docx':
+            loader = Docx2txtLoader(temp_path)
+        elif fileType.lower() == 'rtf':
+            loader = UnstructuredRTFLoader(temp_path)
+        else:
+            raise ValueError(f"Unsupported file type: {fileType}")
+        
+        # Load documents
+        documents = loader.load()
+        return documents
+        
+    finally:
+        # Clean up temporary file
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
 }
 
 ClassMethod hasattr(obj As %SYS.Python, attr As %String) [ Language = python ]
