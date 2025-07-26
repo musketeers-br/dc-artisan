@@ -34,6 +34,21 @@
     "onCommand:dc-artisan.testApiConnection"
   ],
   "main": "./out/extension.js",
+  "contributors": [
+    {
+      "name": "Henry Hamon Pereira",
+      "email": "henry@hamonrails.com.br"
+    },
+    {
+      "name": "Henrique Dias",
+      "email": "henrique.dias@gmail.com"
+    },
+    {
+      "name": "José Roberto Pereira JR",
+      "email": "JRPereiraJr@gmail.com"
+    }
+  ],
+  "license": "MIT",
   "contributes": {
     "commands": [
       {
