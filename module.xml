@@ -21,6 +21,10 @@
         CookiePath="/csp/artisan/api"
         UseCookies="2"
       />
+      <Invokes>
+          <Invoke Class="dc.artisan.Utils" Method="StartProduction">
+          </Invoke>
+      </Invokes>
     </Module>
   </Document>
 </Export>

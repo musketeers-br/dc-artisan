@@ -12,6 +12,7 @@
         "ms-azuretools.vscode-docker",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-vscode-remote.remote-containers"
+        "ms-vscode-remote.remote-containers",
+        "3musketeers-br.dc-artisan"
     ]
 }
