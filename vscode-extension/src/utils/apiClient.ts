@@ -157,18 +157,30 @@ export class ApiClient {
     originalPrompt: string,
     clarifyingQuestions: string[],
     userResponses: string[]
-  ): Promise<{optimizedPrompt: string}> {
-    const response = await this.request<{improved_prompt: string}>('/prompt-optimizer/answer', 'POST', {
+  ): Promise<{optimizedPrompt: string; keyImprovements?: string}> {
+    const response = await this.request<{improved_prompt: string; key_improvements?: string}>('/prompt-optimizer/answer', 'POST', {
       originalPrompt,
       clarifyingQuestions,
       user_responses: userResponses
     });
     
     // Map the improved_prompt to optimizedPrompt for consistency
-    return { optimizedPrompt: response.improved_prompt };
+    return { 
+      optimizedPrompt: response.improved_prompt,
+      keyImprovements: response.key_improvements
+    };
   }
 
   // RAG Pipeline endpoints
+  public async ingestDocument(payload: {
+    document: string;
+    chunkSize: string;
+    collection: string;
+    fileType: string;
+  }): Promise<{collection: string; totalDocuments: string; error?: string}> {
+    return this.request<{collection: string; totalDocuments: string; error?: string}>('/rag-pipeline/ingest', 'POST', payload);
+  }
+
   public async uploadDocument(fileData: Buffer, fileName: string): Promise<any> {
     const form = new FormData();
     form.append('file', fileData, fileName);

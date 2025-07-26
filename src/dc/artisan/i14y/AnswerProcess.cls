@@ -17,15 +17,12 @@ Method OnRequest(pRequest As dc.artisan.i14y.Messages.Request, Output pResponse 
         Set:(bundle.%Get("user_responses")'="") answers = bundle."user_responses".%ToJSON()
         Set prompt = ..GetPromptImprovedVersion(bundle.originalPrompt, questions, answers)
         $$$ThrowOnError(..CallLiteLLM(prompt, pRequest.Model, .llmResponse))
-        Set resp = llmResponse.GetFirstCompletion()
-        Set lst = $ListFromString(resp,"Key Improvements:")
-        Set response = $Replace($List(lst,1), "# Final Prompt:", "")
-        Set keyImprovements = $List(lst,2)
+        Set resp = {}.%FromJSON(llmResponse.GetFirstCompletion())
         Set output = {"originalPrompt": (bundle.originalPrompt),
             "clarifyingQuestions": (bundle.clarifyingQuestions),
             "user_responses": (bundle."user_responses"),
-            "improved_prompt": (response),
-            "key_improvements": (keyImprovements)
+            "improved_prompt": (resp.%Get("final_prompt")),
+            "key_improvements": (resp.%Get("key_improvements",""))
         }
 
         // Create and populate the response
@@ -78,21 +75,23 @@ Method CallLiteLLM(pPrompt As %String, pModel As %String, Output pResponse As %L
 Method GetPromptImprovedVersion(originalPrompt As %String, clarifyingQuestions As %String, userAnswers As %String) As %String
 {
     Set prompt = "# ROLE AND GOAL "_$c(10)_
-        "You are an expert Prompt Engineer. "_
-        "Your task is to create a final, optimized, and comprehensive prompt based on an initial idea, "_
-        "a set of clarifying questions, and the user's answers to those questions. "_$c(10)_
-        "# CONTEXT "_$c(10)_
-        "You will be given three pieces of information: "_$c(10)_
-        "1.  `Original Prompt`: The user's initial, often vague, idea. "_$c(10)_
-        "2.  `Clarifying Questions`: The questions you (the AI) previously asked to get more detail. "_$c(10)_
-        "3.  `User Answers`: The user's responses to your questions. "_$c(10)_
+        "You are an expert Prompt Engineer acting as a JSON generation service.  "_$c(10)_
+        "Your task is to create a final, optimized prompt based on an initial idea, a set of clarifying questions,  "_$c(10)_
+        "and the user's answers. "_$c(10)_
+        "# OUTPUT SPECIFICATION "_$c(10)_
+        "Your response MUST be a single, valid, raw JSON object and nothing else.  "_$c(10)_
+        "Do not include any explanatory text, introductory phrases, or markdown code fences like ```json.  "_$c(10)_
+        "The JSON object must conform to the following schema: "_$c(10)_
+        "{ "_$c(10)_
+        $Char(34)_"final_prompt"_$Char(34)_": "_$Char(34)_"string"_$Char(34)_", "_$c(10)_
+        $Char(34)_"key_improvements"_$Char(34)_": [ "_$c(10)_$Char(34)_"string"_$Char(34)_$c(10)_
+        "] } "_$c(10)_
         "# INSTRUCTIONS "_$c(10)_
-        "1.  Carefully review all three pieces of information provided below. "_$c(10)_
-        "2.  Synthesize the user's original goal with the specific details from their answers."_$c(10)_
-        "3.  Construct a single, highly effective, and detailed final prompt that incorporates all the user's requirements. "_
-            "The final prompt should be clear, specific, and ready to be used."_$c(10)_
-        "4. Add a brief, bulleted list titled 'Key Improvements' "_
-            "explaining why this new prompt is more effective than the original."_$c(10)_
+        "1.  Carefully review the three pieces of information provided in the "_$Char(34)_"PROVIDED INFORMATION"_$Char(34)_" section. "_$c(10)_
+        "2.  Synthesize the user's original goal with the specific details from their answers. "_$c(10)_
+        "3.  Construct a single, highly effective, and detailed final prompt. Place this complete text into the `final_prompt` property of the JSON. "_$c(10)_
+        "4.  Identify the main reasons why the new prompt is an improvement over the original. Formulate these reasons as a list of short, clear sentences. Place this list as an array of strings into the `key_improvements` property of the JSON. "_$c(10)_
+        "5.  Ensure the final output is only the JSON object described above. Properly escape any special characters within the JSON strings. "_$c(10)_
         "# PROVIDED INFORMATION "_$c(10)_
         "## Original Prompt: "_$c(10)_
         originalPrompt _""_$c(10)_

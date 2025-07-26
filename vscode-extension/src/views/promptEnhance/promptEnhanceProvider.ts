@@ -152,7 +152,8 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
       if (this._view) {
         this._view.webview.postMessage({
           type: 'optimizedPrompt',
-          prompt: result.optimizedPrompt
+          prompt: result.optimizedPrompt,
+          keyImprovements: result.keyImprovements
         });
       }
     } catch (error: any) {
@@ -360,6 +361,12 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
               <button id="copy-optimized-button">Copy to Clipboard</button>
               <button id="update-template-button">Update Template</button>
             </div>
+            <div id="key-improvements-section" class="hidden" style="margin-top: 15px;">
+              <h4>Key Improvements</h4>
+              <div class="preview" id="key-improvements">
+                <!-- Key improvements will be shown here -->
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -386,6 +393,8 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         const copyOptimizedButton = document.getElementById('copy-optimized-button');
         const backToPromptFromOptimizedButton = document.getElementById('back-to-prompt-from-optimized-button');
         const updateTemplateButton = document.getElementById('update-template-button');
+        const keyImprovementsSection = document.getElementById('key-improvements-section');
+        const keyImprovementsElement = document.getElementById('key-improvements');
         
         // No tab switching needed
         
@@ -587,7 +596,7 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
               displayClarifyingQuestions(message.questions);
               break;
             case 'optimizedPrompt':
-              displayOptimizedPrompt(message.prompt);
+              displayOptimizedPrompt(message.prompt, message.keyImprovements);
               break;
             case 'error':
               // Re-enable the optimize button if there was an error
@@ -640,12 +649,21 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
         }
         
         // Display optimized prompt
-        function displayOptimizedPrompt(prompt) {
+        function displayOptimizedPrompt(prompt, keyImprovements) {
           // Re-enable submit button if it was disabled
           submitResponsesButton.disabled = false;
           submitResponsesButton.textContent = 'Submit Responses';
           
           optimizedPromptElement.textContent = prompt;
+          
+          // Show key improvements if available
+          if (keyImprovements) {
+            keyImprovementsElement.textContent = keyImprovements;
+            keyImprovementsSection.classList.remove('hidden');
+          } else {
+            keyImprovementsSection.classList.add('hidden');
+          }
+          
           questionsSection.classList.add('hidden');
           optimizedSection.classList.remove('hidden');
           // Keep prompt section hidden

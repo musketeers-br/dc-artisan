@@ -18,10 +18,14 @@ XData ProductionDefinition
   </Item>
   <Item Name="AnswerService" Category="" ClassName="dc.artisan.i14y.AnswerService" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
   </Item>
+  <Item Name="IngestService" Category="" ClassName="dc.artisan.i14y.IngestService" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
+  </Item>
 
   <Item Name="OptimizerProcess" Category="" ClassName="dc.artisan.i14y.OptimizerProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
   </Item>
   <Item Name="AnswerProcess" Category="" ClassName="dc.artisan.i14y.AnswerProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
+  </Item>
+  <Item Name="IngestProcess" Category="" ClassName="dc.artisan.i14y.IngestProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
   </Item>
 
   <Item Name="LLMService" Category="" ClassName="dc.artisan.i14y.LLM.Operation.LiteLLMBO" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
