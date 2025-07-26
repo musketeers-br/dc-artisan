@@ -2,7 +2,8 @@
   "name": "dc-artisan",
   "displayName": "DC Artisan",
   "description": "Prompt enhancement and RAG pipeline tools for developers",
-  "version": "0.0.10",
+  "version": "1.0.0",
+  "icon": "media/logo.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/musketeers-br/dc-artisan"
@@ -16,7 +17,13 @@
     "vscode": "^1.60.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "AI"
+  ],
+  "keywords": [
+    "objectscript",
+    "intersystems",
+    "prompt engineering"
   ],
   "activationEvents": [
     "onView:promptEnhance",
