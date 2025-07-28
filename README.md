@@ -1,3 +1,5 @@
+[![Gitter](https://img.shields.io/badge/Available%20on-Intersystems%20Open%20Exchange-00b2a9.svg)](https://openexchange.intersystems.com/package/dc-artisan)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat&logo=AdGuard)](LICENSE)
 
 # dc-artisan - Prompt & RAG Pipeline Toolkit for Developers
