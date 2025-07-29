@@ -42,7 +42,7 @@ export class RagPipelineProvider implements vscode.WebviewViewProvider {
             await this._handleViewDocuments(data.collection);
             break;
           case 'deleteChunk':
-            await this._handleDeleteChunk(data.chunkId);
+            await this._handleDeleteChunk(data.collection, data.chunkId);
             break;
         }
       } catch (error: any) {
@@ -111,9 +111,9 @@ export class RagPipelineProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private async _handleDeleteChunk(chunkId: string) {
+  private async _handleDeleteChunk(collection: string, chunkId: string) {
     try {
-      await this._apiClient.deleteChunk(chunkId);
+      await this._apiClient.deleteChunk(collection, chunkId);
       vscode.window.showInformationMessage(`Chunk ${chunkId} deleted successfully`);
       this._view?.webview.postMessage({
         type: 'chunkDeleted',
@@ -527,6 +527,7 @@ export class RagPipelineProvider implements vscode.WebviewViewProvider {
           if (confirm('Are you sure you want to delete chunk ' + chunkId + '?')) {
             vscode.postMessage({
               type: 'deleteChunk',
+              collection: collectionInput.value.trim(),
               chunkId: chunkId
             });
           }

@@ -220,7 +220,7 @@ export class ApiClient {
     return this.request<{id: string, embedding: any, document: string, metadata: any}[]>('/rag-pipeline/documents', 'POST', { collection });
   }
 
-  public async deleteChunk(chunkId: string): Promise<void> {
-    return this.request<void>(`/rag-pipeline/chunks/${chunkId}`, 'DELETE');
+  public async deleteChunk(collection: string, chunkId: string): Promise<void> {
+    return this.request<void>(`/rag-pipeline/documents/${collection}/${chunkId}`, 'DELETE');
   }
 }
