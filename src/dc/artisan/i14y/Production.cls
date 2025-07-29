@@ -20,6 +20,8 @@ XData ProductionDefinition
   </Item>
   <Item Name="IngestService" Category="" ClassName="dc.artisan.i14y.IngestService" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
   </Item>
+  <Item Name="DocumentsService" Category="" ClassName="dc.artisan.i14y.DocumentsService" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
+  </Item>
 
   <Item Name="OptimizerProcess" Category="" ClassName="dc.artisan.i14y.OptimizerProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
   </Item>
@@ -31,6 +33,9 @@ XData ProductionDefinition
   <Item Name="LLMService" Category="" ClassName="dc.artisan.i14y.LLM.Operation.LiteLLMBO" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
     <Setting Target="Adapter" Name="APIKeysConfig"></Setting>
     <Setting Target="Adapter" Name="Timeout">30</Setting>
+  </Item>
+
+  <Item Name="DocumentsOperation" Category="" ClassName="dc.artisan.i14y.DocumentsOperation" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
   </Item>
 
 </Production>
