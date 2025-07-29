@@ -149,7 +149,7 @@ Method CallLiteLLMDocumentIngest(pRequest As dc.artisan.i14y.LLM.Messages.LiteLL
     Return tSC
 }
 
-ClassMethod DocumentIngest(embeddingModel As %String, collection As %String, base64 As %String, fileType As %String, chunkSize As %Integer) As %String [ Language = python ]
+ClassMethod DocumentIngest(embeddingModel As %String, collection As %String, base64Content As %String, fileType As %String, chunkSize As %Integer) As %String [ Language = python ]
 {
     import json
     import os
@@ -174,7 +174,7 @@ ClassMethod DocumentIngest(embeddingModel As %String, collection As %String, bas
             return response['data'][0]['embedding']
 
     # Create a Document object from the string
-    docs = iris.cls(__name__).DocumentLoader(base64, fileType)
+    docs = iris.cls(__name__).DocumentLoader(base64Content, fileType)
 
     try:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunkSize, chunk_overlap=200)
@@ -198,7 +198,7 @@ ClassMethod DocumentIngest(embeddingModel As %String, collection As %String, bas
         return json.dumps({"error": str(err)})
 }
 
-ClassMethod DocumentLoader(base64 As %String, fileType As %String) As %SYS.Python [ Language = python ]
+ClassMethod DocumentLoader(pBase64 As %String, fileType As %String) As %SYS.Python [ Language = python ]
 {
     import base64
     import tempfile
@@ -208,7 +208,7 @@ ClassMethod DocumentLoader(base64 As %String, fileType As %String) As %SYS.Pytho
     )
     
     # Decode base64 content
-    file_content = base64.b64decode(base64)
+    file_content = base64.b64decode(pBase64)
     
     # Create temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{fileType}') as temp_file:

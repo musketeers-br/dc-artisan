@@ -17,6 +17,8 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
     <Route Url="/prompt-optimizer/answer" Method="post" Call="Answer" />
     <!--RAG Operations -->
     <Route Url="/rag-pipeline/ingest" Method="post" Call="Ingest" />
+    <Route Url="/rag-pipeline/documents/:collection/:chunkId" Method="delete" Call="ChunkDelete" />
+    <Route Url="/rag-pipeline/documents" Method="post" Call="Documents" />
 </Routes>
 }
 
@@ -116,6 +118,47 @@ ClassMethod Ingest() As %Status
         #dim response As dc.artisan.i14y.LLM.Messages.LiteLLMDocumentResponse
         Do ##class(%REST.Impl).%WriteResponse({"collection": (response.Collection), "totalDocuments": (response.TotalDocuments), "error": (response.Error)}.%ToJSON())
 
+    } Catch (ex) {
+        Set tSC=ex.AsStatus()
+    }
+    Return $$$OK
+}
+
+ClassMethod Documents() As %Status
+{
+    Try {
+        Do ##class(%REST.Impl).%SetContentType("application/json")
+
+        Set sc = ##class(Ens.Director).CreateBusinessService("DocumentsService", .businessService)
+        If $$$ISERR(sc) || '$IsObject(businessService) {
+            Throw ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, "Service unavailable"))
+        }
+        Set json=##class(%DynamicAbstractObject).%FromJSON(%request.Content)
+
+        Set request = ##class(dc.artisan.i14y.Messages.DocumentsReq).%New()
+        Set request.Name = json.collection
+        Set sc = businessService.ProcessInput(request, .response)
+        Do ##class(%REST.Impl).%WriteResponse({}.%FromJSON(response.Result))
+    } Catch (ex) {
+        Set tSC=ex.AsStatus()
+    }
+    Return $$$OK
+}
+
+ClassMethod ChunkDelete(Collection As %String, ChunkId As %String) As %Status
+{
+    Try {
+        Do ##class(%REST.Impl).%SetContentType("application/json")
+
+        Set sc = ##class(Ens.Director).CreateBusinessService("DocumentExService", .businessService)
+        If $$$ISERR(sc) || '$IsObject(businessService) {
+            Throw ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, "Service unavailable"))
+        }
+
+        Set request = ##class(dc.artisan.i14y.Messages.ChunkDeleteReq).%New()
+        Set request.Name = Collection
+        Set request.ChunkId = ChunkId
+        Set sc = businessService.ProcessInput(request, .response)
     } Catch (ex) {
         Set tSC=ex.AsStatus()
     }

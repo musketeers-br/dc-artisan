@@ -215,4 +215,12 @@ export class ApiClient {
   public async getDocumentChunks(documentId: string): Promise<{chunkId: string, content: string}[]> {
     return this.request<{chunkId: string, content: string}[]>(`/rag-pipeline/documents/${documentId}/chunks`);
   }
+
+  public async getCollectionDocuments(collection: string): Promise<{id: string, embedding: any, document: string, metadata: any}[]> {
+    return this.request<{id: string, embedding: any, document: string, metadata: any}[]>('/rag-pipeline/documents', 'POST', { collection });
+  }
+
+  public async deleteChunk(collection: string, chunkId: string): Promise<void> {
+    return this.request<void>(`/rag-pipeline/documents/${collection}/${chunkId}`, 'DELETE');
+  }
 }
