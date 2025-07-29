@@ -198,7 +198,7 @@ ClassMethod DocumentIngest(embeddingModel As %String, collection As %String, bas
         return json.dumps({"error": str(err)})
 }
 
-ClassMethod DocumentLoader(base64 As %String, fileType As %String) As %SYS.Python [ Language = python ]
+ClassMethod DocumentLoader(pBase64 As %String, fileType As %String) As %SYS.Python [ Language = python ]
 {
     import base64
     import tempfile
@@ -208,7 +208,7 @@ ClassMethod DocumentLoader(base64 As %String, fileType As %String) As %SYS.Pytho
     )
     
     # Decode base64 content
-    file_content = base64.b64decode(base64)
+    file_content = base64.b64decode(pBase64)
     
     # Create temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{fileType}') as temp_file:
