@@ -11,16 +11,34 @@ Method DocumentsList(pRequest As dc.artisan.i14y.Messages.DocumentsReq, Output p
     Set pResponse = ##class(dc.artisan.i14y.Messages.Response).%New()
     Try {
       Set tStatement = ##class(%SQL.Statement).%New()
-      Set qStatus = tStatement.%Prepare("SELECT JSON_OBJECT('id': id, 'embedding': embedding, 'document': document, 'metadata': metadata) as Doc FROM SQLUser."_$Char(34)_pRequest.Name_$Char(34))
-      If qStatus'=1 {
-        Return tSC
-      }
+      set tStatement.%SelectMode = 1
+      Set sql = "SELECT JSON_OBJECT('id': id, 'embedding': embedding, 'document': document, 'metadata': metadata) as Doc FROM SQLUser."_$Char(34)_pRequest.Name_$Char(34)
+      Set qStatus = tStatement.%Prepare(sql)
+      Throw:$$$ISERR(qStatus) qStatus
       Set rset = tStatement.%Execute()
       Set json = []
       While (rset.%Next()) {
-        Do json.%Push(rset.%Get("Doc"))
+        Do json.%Push({}.%FromJSON(rset.Doc))
       }
       Set pResponse.Result = json.%ToJSON()
+    } Catch ex {
+        Set tSC = ex.AsStatus()
+    }
+    Return tSC
+}
+
+Method DocumentDelete(pRequest As dc.artisan.i14y.Messages.ChunkDeleteReq, Output pResponse As dc.artisan.i14y.Messages.Response) As %Status
+{
+    Set tSC = $$$OK
+    Set pResponse = ##class(dc.artisan.i14y.Messages.Response).%New()
+    Try {
+      Set tStatement = ##class(%SQL.Statement).%New()
+      set tStatement.%SelectMode = 1
+      Set sql = "Delete FROM SQLUser."_$Char(34)_pRequest.Name_$Char(34)_" Where id = ? "
+      Set qStatus = tStatement.%Prepare(sql)
+      Throw:$$$ISERR(qStatus) qStatus
+      Set rset = tStatement.%Execute(pRequest.ChunkId)
+      
     } Catch ex {
         Set tSC = ex.AsStatus()
     }
@@ -55,11 +73,15 @@ Method CollectionExists(pRequest As dc.artisan.i14y.Messages.CollectionReq, Outp
 XData MessageMap
 {
 <MapItems>
-  <MapItem MessageType="dc.artisan.i14y.Messages.CollectionReq">
+  <MapItem MessageType="dc.artisan.i14y.Messages.DocumentsReq">
     <Method>DocumentsList</Method>
   </MapItem>
   <MapItem MessageType="dc.artisan.i14y.Messages.CollectionReq">
     <Method>CollectionExists</Method>
+  </MapItem>
+
+  <MapItem MessageType="dc.artisan.i14y.Messages.ChunkDeleteReq">
+    <Method>DocumentDelete</Method>
   </MapItem>
 </MapItems>
 }

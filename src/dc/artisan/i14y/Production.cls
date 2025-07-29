@@ -22,6 +22,8 @@ XData ProductionDefinition
   </Item>
   <Item Name="DocumentsService" Category="" ClassName="dc.artisan.i14y.DocumentsService" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
   </Item>
+  <Item Name="DocumentExService" Category="" ClassName="dc.artisan.i14y.DocumentExService" PoolSize="0" Enabled="true" Foreground="false" Comment="" LogTraceEvents="true" Schedule="">
+  </Item>
 
   <Item Name="OptimizerProcess" Category="" ClassName="dc.artisan.i14y.OptimizerProcess" PoolSize="1" Enabled="true" Foreground="false" Comment="" LogTraceEvents="false" Schedule="">
   </Item>

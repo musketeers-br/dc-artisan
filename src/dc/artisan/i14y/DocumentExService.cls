@@ -1,14 +1,14 @@
-Class dc.artisan.i14y.DocumentsService Extends Ens.BusinessService
+Class dc.artisan.i14y.DocumentExService Extends Ens.BusinessService
 {
 
 /// An adapaterless BS
 Parameter ADAPTER;
 
-Method OnProcessInput(pInput As dc.artisan.i14y.Messages.DocumentsReq, Output pOutput As dc.artisan.i14y.Messages.Response) As %Status
+Method OnProcessInput(pInput As dc.artisan.i14y.Messages.ChunkDeleteReq, Output pOutput As dc.artisan.i14y.Messages.Response) As %Status
 {
     Try {
         // Validate input
-        If '$IsObject(pInput) || (pInput.Name = "") {
+        If '$IsObject(pInput) || (pInput.Name = "") || (pInput.ChunkId = "") {
             Return $$$ERROR($$$GeneralError, "Invalid input request")
         }
         
