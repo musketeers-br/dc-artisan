@@ -37,7 +37,7 @@ Manage the entire lifecycle of your RAG pipeline's knowledge base.
 ![rag pipeline demo](./vscode-extension/assets/rag_pipeline.gif)
 
 * **Document Management**:
-  * Upload and embed new documents directly into the vector database.
+  * Upload and embed new documents directly into the vector database. This idea came from [InterSystems Ideas Portal](https://ideas.intersystems.com/ideas/DPI-I-557) and served as the inspiration for the project.
   * Automatically extract text from common file formats like PDF, PPT, DOCX, and more.
 * **Embedding Operations**:
   * Atomically view, update, and delete individual text chunks from your vector store.
