@@ -173,10 +173,10 @@ ClassMethod DocumentIngest(embeddingModel As %String, collection As %String, bas
             response = litellm.embedding(model=self.model, input=[text])
             return response['data'][0]['embedding']
 
-    # Create a Document object from the string
-    docs = iris.cls(__name__).DocumentLoader(base64Content, fileType)
-
     try:
+        # Create a Document object from the string
+        docs = iris.cls(__name__).DocumentLoader(base64Content, fileType)
+
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunkSize, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
@@ -231,6 +231,8 @@ ClassMethod DocumentLoader(pBase64 As %String, fileType As %String) As %SYS.Pyth
         # Load documents
         documents = loader.load()
         return documents
+    except ZeroDivisionError as e:
+        print(f"An error occurred: {e}")
         
     finally:
         # Clean up temporary file
