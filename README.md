@@ -22,6 +22,8 @@ In the rapidly evolving landscape of Large Language Models (LLMs), developers ne
 
 This tool is designed to help you craft and test your prompts with precision.
 
+![prompt enhance demo](./vscode-extension/assets/prompt_enhance.gif)
+
 * **Markdown-based Editing**: Write and structure your prompts using the familiar Markdown syntax.
 * **Dynamic Variables**: Easily highlight variables using `{variable}` format (e.g., `{language}`, `{task}`).
 * **Live Preview**: Input test values for your variables and instantly preview the final prompt with the substitutions applied.
@@ -31,6 +33,8 @@ This tool is designed to help you craft and test your prompts with precision.
 ### RAG Pipeline Mode
 
 Manage the entire lifecycle of your RAG pipeline's knowledge base.
+
+![rag pipeline demo](./vscode-extension/assets/rag_pipeline.gif)
 
 * **Document Management**:
   * Upload and embed new documents directly into the vector database.
@@ -103,8 +107,6 @@ You will add this JSON configuration to the appropriate setting within the IRIS 
 
 You can install the dc-artisan extension directly from the [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=3musketeers-br.dc-artisan).
 
-![prompt enhance demo](./vscode-extension/assets/prompt_enhance.gif)
-![rag pipeline demo](./vscode-extension/assets/rag_pipeline.gif)
 
 ## Compiling and Packaging the VSCode Extension
 
