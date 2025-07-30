@@ -13,7 +13,7 @@
         NameSpace="{$namespace}"
         Path="/src"
         Recurse="1"
-        Directory="{$cspdir}/csp/artisan/api" 
+        Directory="{$cspdir}artisan/api" 
         MatchRoles=":%All"
         AutheEnabled="#{$$$AutheCache + $$$AutheUnauthenticated}"
         DispatchClass="dc.artisan.Rest" 

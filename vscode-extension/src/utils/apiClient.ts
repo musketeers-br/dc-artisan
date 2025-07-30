@@ -153,6 +153,14 @@ export class ApiClient {
     });
   }
 
+  public async testPrompt(provider: string, prompt: string, testDataset: string): Promise<string> {
+    return this.request<string>('/prompt-optimizer/test', 'POST', {
+      provider,
+      prompt,
+      testDataset
+    });
+  }
+
   public async submitResponses(
     originalPrompt: string,
     clarifyingQuestions: string[],

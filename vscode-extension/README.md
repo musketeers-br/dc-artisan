@@ -71,6 +71,8 @@ Follow these steps to compile and generate the `.vsix` file for this extension:
    vsce package
    ```
    The `.vsix` file will be generated in the current folder and is ready to be installed in VSCode.
+7. In the VS Code, press Ctrl+Shift+P and type `extensions: Install from VSIX`, then locate and select the file dc-artisan-x.y.z.vsix
+
 
 ## 🎖️ Credits
 Artisan is developed with ❤️ by the Musketeers Team

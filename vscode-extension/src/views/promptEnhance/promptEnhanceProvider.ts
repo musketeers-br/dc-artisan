@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { getNonce } from '../../utils/nonce';
 import { ApiClient } from '../../utils/apiClient';
+import * as fs from 'fs';
+const os = require('os');
 
 export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'promptEnhance';
@@ -45,9 +47,70 @@ export class PromptEnhanceProvider implements vscode.WebviewViewProvider {
           case 'submitResponses':
             await this._submitResponses(data.responses);
             break;
-          case 'testPrompt':
-            // Handle prompt testing with different providers
-            vscode.window.showInformationMessage(`Testing prompt with ${data.provider}`);
+          case 'testPrompt':// Handle prompt testing with different providers
+            // open a file dialog to select a file for testing
+            const fileUri = await vscode.window.showOpenDialog({
+              canSelectFiles: true,
+              canSelectFolders: false,
+              canSelectMany: false,
+              filters: {
+                'Text files': ['csv'],
+                // 'All files': ['*']
+              }
+            });
+            if (fileUri && fileUri[0]) {
+              vscode.window.showInformationMessage(`Testing prompt with ${data.provider}, ${data.prompt}`);
+              const fileContent = await vscode.workspace.fs.readFile(fileUri[0]);
+              const testDataset = fileContent.toString();
+
+              // Call the API client to test the prompt with the selected provider
+              const result = await this._apiClient.testPrompt(data.provider, data.prompt, testDataset);
+
+              // Write the HTML page in the result variable to a HTML file
+              const htmlFileUri = vscode.Uri.joinPath(this._extensionUri, 'testResult.html');
+              await vscode.workspace.fs.writeFile(htmlFileUri, Buffer.from(result));
+
+              // // Open the HTML file in a new editor
+              // const document = await vscode.workspace.openTextDocument(htmlFileUri);
+              // await vscode.window.showTextDocument(document, { preview: false });
+
+              // // Open the HTML file in the default browser
+              // const urlToOpen = htmlFileUri.fsPath;
+              // vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(urlToOpen));
+              // vscode.window.showInformationMessage(`Opening ${urlToOpen} in your default browser.`);
+              
+              const homeDir = os.homedir();
+              console.log('Saving test result to:', homeDir);
+              const options: vscode.SaveDialogOptions = {
+                  filters: {
+                      // 'All Files': ['*'], 
+                      'Text Files': ['html'],
+                  },
+                  defaultUri: vscode.Uri.file(`${homeDir}/report.html`)
+              };
+
+              const uri = await vscode.window.showSaveDialog(options);
+
+              if (uri) {
+                  // User selected a location and filename
+                  const filePath = uri.fsPath;
+
+                  const fileContent = result; 
+
+                  try {
+                      fs.writeFileSync(filePath, fileContent);
+                      vscode.window.showInformationMessage(`File downloaded to: ${filePath}`);
+                  } catch (error: any) {
+                      vscode.window.showErrorMessage(`Error saving file: ${error.message}`);
+                  }
+              } else {
+                  // User cancelled the dialog
+                  vscode.window.showInformationMessage('File download cancelled.');
+              }
+            } else {
+              vscode.window.showErrorMessage('No file selected for testing prompt.');
+            }
+
             break;
         }
       } catch (error: any) {
