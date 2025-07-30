@@ -103,6 +103,9 @@ You will add this JSON configuration to the appropriate setting within the IRIS 
 
 You can install the dc-artisan extension directly from the [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=3musketeers-br.dc-artisan).
 
+![prompt enhance demo](./vscode-extension/assets/prompt_enhance.gif)
+![rag pipeline demo](./vscode-extension/assets/rag_pipeline.gif)
+
 ## Compiling and Packaging the VSCode Extension
 
 Follow these steps to compile and generate the .vsix file for the extension, which you can then install in VSCode.
