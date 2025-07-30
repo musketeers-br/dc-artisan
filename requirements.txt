@@ -10,3 +10,8 @@ langchain-community>=0.2.0
 pypdf
 docx2txt
 unstructured[rtf]
+ragas
+Pillow
+sacrebleu
+datasets
+evaluate

@@ -15,6 +15,7 @@ XData UrlMap [ XMLNamespace = "http://www.intersystems.com/urlmap" ]
     <!-- Prompt Optimization -->
     <Route Url="/prompt-optimizer/optimize" Method="post" Call="Optimize" />
     <Route Url="/prompt-optimizer/answer" Method="post" Call="Answer" />
+    <Route Url="/prompt-optimizer/test" Method="post" Call="TestPrompt" />
     <!--RAG Operations -->
     <Route Url="/rag-pipeline/ingest" Method="post" Call="Ingest" />
     <Route Url="/rag-pipeline/documents/:collection/:chunkId" Method="delete" Call="ChunkDelete" />
@@ -161,6 +162,42 @@ ClassMethod ChunkDelete(Collection As %String, ChunkId As %String) As %Status
         Set sc = businessService.ProcessInput(request, .response)
     } Catch (ex) {
         Set tSC=ex.AsStatus()
+    }
+    Return $$$OK
+}
+
+ClassMethod TestPrompt() As %Status
+{
+    Try {
+        Do ##class(%REST.Impl).%SetContentType("text/html")
+        Set requestContent = ##class(%DynamicAbstractObject).%FromJSON(%request.Content)
+
+        Set resp = ##class(dc.artisan.PromptEvaluation).GetLLM(requestContent.provider)
+        Set llm = resp."__getitem__"(0)
+        Set evaluatorLLM = resp."__getitem__"(1)
+        If '$IsObject(llm) {
+            Throw ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, "LLM provider not found"))
+        }
+
+        // todo: let users select provider and metrics in the extension
+        Set evalMetrics = ##class(dc.artisan.PromptEvaluation).GetEvaluationMetrics(evaluatorLLM)
+        If '$IsObject(evalMetrics) {
+            Throw ##class(%Exception.StatusException).CreateFromStatus($$$ERROR($$$GeneralError, "Evaluation metrics not found"))
+        }
+
+        Set execResults = ##class(dc.artisan.PromptEvaluation).ExecuteTestPrompt(
+            requestContent.provider, requestContent.testDataset, requestContent.prompt, evalMetrics, llm
+        )
+
+        Set resultsTotalDict = execResults."__getitem__"(0)
+        Set resultsDataframe = execResults."__getitem__"(1)
+        Set resultsMetrics = execResults."__getitem__"(2)
+        Set response = ##class(dc.artisan.PromptEvaluation).GenerateHtmlReport(resultsDataframe, resultsTotalDict, resultsMetrics)
+        
+        Do ##class(%REST.Impl).%WriteResponse(response)
+    } Catch (ex) {
+        Do ex.Log()
+        Throw ex
     }
     Return $$$OK
 }

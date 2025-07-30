@@ -7,6 +7,7 @@ services:
     restart: always
     environment:
       - ISC_CPF_MERGE_FILE=/home/irisowner/dev/merge.cpf
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     command: --check-caps false --ISCAgent false
     ports:
       - 1972

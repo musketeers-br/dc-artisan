@@ -15,7 +15,7 @@ Property BaseURL As %String;
 Property Timeout As %Numeric [ InitialExpression = 30 ];
 
 /// Default model to use if not specified in request
-Property DefaultModel As %String [ InitialExpression = "openai/o4-mini" ];
+Property DefaultModel As %String [ InitialExpression = "openai/gpt-4o-mini" ];
 
 /// Maximum retry attempts for failed calls
 Property MaxRetries As %Integer [ InitialExpression = 0 ];
@@ -68,7 +68,7 @@ Method OnInit() As %Status
 Method GetLiteLLMInstance(pRequest As dc.artisan.i14y.LLM.Messages.LiteLLMRequest) As %SYS.Python
 {
     If (pRequest.%IsA("tests.dc.artisan.unittests.i14y.LiteLLMRequestMock")) {
-        Return ##class(tests.dc.artisan.unittests.i14y.LiteLLMMock).%New()
+        #; Return ##class(tests.dc.artisan.unittests.i14y.LiteLLMMock).%New()
     }
     Return ..litellm
 }
@@ -88,7 +88,9 @@ Method CallLiteLLM(pRequest As dc.artisan.i14y.LLM.Messages.LiteLLMRequest, Outp
             // Call LiteLLM
             Set model = $Select(pRequest.Model '= "": pRequest.Model, 1: ..GetDefaultModel())
             Set messages = ..json.loads(pRequest.Messages)
-            Set tResponse = litellm.completion(model, messages)
+            // todo: usar o parametro Parameters da mensagem para definir temperature e outros parametros
+            Set temperature = 0
+            Set tResponse = litellm.completion(model, messages, , temperature)
         
             // Map to our response object
             Set pResponse.Model = tResponse.model
