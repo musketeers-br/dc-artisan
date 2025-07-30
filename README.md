@@ -99,6 +99,10 @@ For `dc-artisan` to communicate with LLM providers, you must configure the Busin
 
 You will add this JSON configuration to the appropriate setting within the IRIS Business Operation for dc-artisan.
 
+## Installing the VSCode Extension
+
+You can install the dc-artisan extension directly from the [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=3musketeers-br.dc-artisan).
+
 ## Compiling and Packaging the VSCode Extension
 
 Follow these steps to compile and generate the .vsix file for the extension, which you can then install in VSCode.
@@ -148,3 +152,5 @@ Artisan is developed with ❤️ by the Musketeers Team
 * [José Roberto Pereira](https://community.intersystems.com/user/jos%C3%A9-roberto-pereira-0)
 * [Henry Pereira](https://community.intersystems.com/user/henry-pereira)
 * [Henrique Dias](https://community.intersystems.com/user/henrique-dias-2)
+
+![3Musketeers-br](./assets/3musketeers.png)

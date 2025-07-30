@@ -115,7 +115,7 @@ export class ApiClient {
         'Content-Type': 'application/json'
       },
       // Add timeout to prevent hanging requests
-      timeout: 10000
+      timeout: 60000
     };
     
     if (data) {

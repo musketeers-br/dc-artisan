@@ -2,7 +2,7 @@
   "name": "dc-artisan",
   "displayName": "DC Artisan",
   "description": "Prompt enhancement and RAG pipeline tools for developers",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "icon": "media/logo.png",
   "repository": {
     "type": "git",
