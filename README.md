@@ -29,6 +29,9 @@ This tool is designed to help you craft and test your prompts with precision.
 * **Live Preview**: Input test values for your variables and instantly preview the final prompt with the substitutions applied.
 * **Multi-Provider Testing**: Test your prompts against various LLM providers like OpenAI (ChatGPT), Anthropic (Claude), Google (Gemini), and more, thanks to the LiteLLM backend.
 * **AI-Powered Suggestions**: Analyzes your prompt and asks clarifying questions to help you enrich and improve it.
+* **Prompt Tuning Test**: Upload a CSV file with variable inputs to batch test your prompts. dc-artisan evaluates responses and generates comprehensive reports with quality scores and similarity metrics to measure optimization effectiveness.
+
+![Prompt tuning test Demo](./vscode-extension/assets/prompt_tuning_test.gif)
 
 ### RAG Pipeline Mode
 

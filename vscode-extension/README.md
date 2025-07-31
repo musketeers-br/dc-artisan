@@ -13,8 +13,11 @@ You can install DC Artisan directly from the [VS Code Marketplace](https://marke
 - Highlights variables in {} format, e.g., {language}, {task}
 - Input test values for variables and preview the result with substitutions
 - Test with various providers like ChatGPT, Claude, Gemini, etc.
+- Prompt Tuning TestUpload a CSV file with variable inputs to batch test your prompts. dc-artisan evaluates responses and generates comprehensive reports with quality scores and similarity metrics to measure optimization effectiveness.
 
 ![Prompt Enhance Demo](assets/prompt_enhance.gif)
+
+![Prompt tuning test Demo](assets/prompt_tuning_test.gif)
 
 ### RAG Pipeline Mode
 - Document Management:
@@ -32,7 +35,7 @@ You can install DC Artisan directly from the [VS Code Marketplace](https://marke
 ## Requirements
 
 - VS Code 1.60.0 or higher
-- InterSystems IRIS backend for RAG services
+- InterSystems IRIS dc-artisan backend: https://github.com/musketeers-br/dc-artisan
 
 ## Extension Settings
 
