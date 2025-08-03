@@ -50,7 +50,7 @@ Method CallLiteLLM(pPrompt As %String, pModel As %String, Output pResponse As %L
         }
         
         // Optional: Set parameters if needed
-        Set llmRequest.Parameters = {"temperature":0.7, "max_tokens":2000}.%ToJSON()
+        Set llmRequest.Parameters = {"temperature":0.0, "max_tokens":2000}.%ToJSON()
         
         // Call the LLM Business Operation
         Set sc = ..SendRequestSync("LLMService", llmRequest, .pResponse, pTimeout)

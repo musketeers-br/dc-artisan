@@ -39,8 +39,8 @@ results_df = results.to_pandas()
 
 totals_dict = ast.literal_eval(str(results))
 metrics = [
-    {"name": metric.name, "label": metric.name} 
-    for metric in metrics]
+    {"name": metric, "label": metric} 
+    for metric in results_df.columns[-3:]]
 
 return [
     totals_dict,
@@ -79,29 +79,36 @@ ClassMethod GetEvaluationMetrics(llmEvaluator) [ Language = python ]
 
 # todo: let users select metrics in the extension
 
-from ragas.metrics import BleuScore
-from ragas.metrics import SimpleCriteriaScore
+from ragas.metrics import (
+    RougeScore, 
+    BleuScore, 
+    SimpleCriteriaScore
+)
+
+class NormalizedSemanticSimilarity(SimpleCriteriaScore):
+    def _compute_score(
+        self, safe_loaded_responses
+    ) -> float:
+        return super()._compute_score(safe_loaded_responses) / 100
 
 metrics = [
+    RougeScore(),
+
     BleuScore(),
 
-    SimpleCriteriaScore(
-        name="similarity_score", 
-        definition='''
+    NormalizedSemanticSimilarity(
+        name="semantic_similarity",
+        definition="""
+You are an expert evaluator. Your task is to judge the semantic similarity between two sentences.
+Focus only on the semantic content (i.e., facts, meaning, and intent), and ignore differences in wording, style, or phrasing.
 Score the similarity between the response and the reference on a scale from 0 to 100, where:
 
 - 100 = Perfect match or paraphrase
-
 - 50 = Partial overlap
-
 - 0 = No similarity
 
 Return only a number between 0 and 100. 
-Do not output text, explanations, invalid numbers or NaN.
-
-Example format:
-Score: 85
-        ''',
+        """,
         llm=llmEvaluator
     ),
 
@@ -109,15 +116,12 @@ Score: 85
 #         name="no_suggestions_or_diagnoses", 
 #         definition='''
 # Classify the summary of a patient's report using the following rule:
-# 
 # Return 1 if the summary only describes symptoms or observations (no interpretations or diagnoses).
-# 
 # Return 0 if the summary includes any diagnostic suggestion, interpretation, or possible cause, even indirectly.
 # 
 # Examples:
 # 
 # - "Persistent fatigue, unexplained weight gain, and sensitivity to cold." → 1
-# 
 # - "Fatigue and weight gain; possible hypothyroidism." → 0
 # 
 # Only return 0 or 1 as output.
